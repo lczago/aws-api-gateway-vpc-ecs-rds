@@ -3,7 +3,6 @@ locals {
   db_user        = "${data.aws_secretsmanager_secret_version.db_secrets_version.arn}:user::"
   db_password    = "${data.aws_secretsmanager_secret_version.db_secrets_version.arn}:password::"
   dd_api_key     = "${data.aws_secretsmanager_secret_version.dd_api_key_version.arn}:key::"
-  dd_api_key_raw = jsondecode(data.aws_secretsmanager_secret_version.dd_api_key_version.secret_string).key
 }
 
 module "ecs" {
@@ -11,11 +10,10 @@ module "ecs" {
 
   cluster_name = "${var.application_name}-cluster"
 
-  fargate_capacity_providers = {
+  default_capacity_provider_strategy = {
     FARGATE = {
-      default_capacity_provider_strategy = {
-        weight = 100
-      }
+      weight = 100
+      base   = 1
     }
   }
 }

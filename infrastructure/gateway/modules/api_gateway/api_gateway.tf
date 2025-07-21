@@ -50,18 +50,17 @@ data "aws_iam_policy_document" "bands_rest_api_gateway_allow_policy_document" {
     actions   = ["execute-api:Invoke"]
     resources = [aws_api_gateway_rest_api.bands_rest_api_gateway.execution_arn]
 
-    condition {
-      test     = "IpAddress"
-      variable = "aws:SourceIp"
-      values   = ["${data.http.ip.response_body}/32"]
-    }
+    # condition {
+    #   test     = "IpAddress"
+    #   variable = "aws:SourceIp"
+    #   values   = ["${data.http.ip.response_body}/32"]
+    # }
   }
 }
 
-
-data "http" "ip" {
-  url = "https://ifconfig.me/ip"
-}
+# data "http" "ip" {
+#   url = "https://ifconfig.me/ip"
+# }
 
 resource "aws_api_gateway_rest_api_policy" "bands_rest_api_gateway_policy" {
   rest_api_id = aws_api_gateway_rest_api.bands_rest_api_gateway.id

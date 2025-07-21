@@ -176,3 +176,49 @@ data "aws_iam_policy_document" "task_assume_role" {
     ]
   }
 }
+
+resource "aws_iam_role" "api_gw_cloudwatch_role" {
+  name = "APIGatewayCloudWatchLogsRole"
+  assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "apigateway.amazonaws.com"
+        },
+        "Action": "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "api_gw_cloudwatch_role_policy" {
+  role = aws_iam_role.api_gw_cloudwatch_role.id
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents",
+          "logs:GetLogEvents",
+          "logs:FilterLogEvents"
+        ],
+        "Resource": "*"
+      }
+    ]
+  })
+}
+
+resource "aws_api_gateway_account" "account_logging" {
+  cloudwatch_role_arn = aws_iam_role.api_gw_cloudwatch_role.arn
+
+  depends_on = [
+    aws_iam_role_policy.api_gw_cloudwatch_role_policy
+  ]
+}

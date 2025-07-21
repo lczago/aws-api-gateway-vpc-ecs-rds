@@ -5,18 +5,18 @@ module "nlb" {
 
   load_balancer_type = "network"
 
-  vpc_id          = data.aws_vpc.vpc.id
-  subnets         = data.aws_subnets.private.ids
+  vpc_id  = data.aws_vpc.vpc.id
+  subnets = data.aws_subnets.private.ids
   security_groups = [data.aws_security_group.sg_nlb.id]
 
   internal = true
 
-  target_groups = [
-    {
+  target_groups = {
+    ex-target = {
       name_prefix          = "tg-"
-      backend_protocol     = "TCP"
-      backend_port         = 8080
-      target_type          = "ip"
+      protocol    = "TCP"
+      port        = 8080
+      target_type = "ip"
       deregistration_delay = 10
       health_check = {
         enabled             = true
@@ -29,22 +29,20 @@ module "nlb" {
         matcher             = "200-299"
       }
     }
-  ]
-
-  http_tcp_listeners = [
-    {
-      port               = 80
-      action_type        = "forward"
-      protocol           = "TCP"
-      target_group_index = 0
-    }
-  ]
-
-  tags = {
-    Name = "${var.application_name}-nlb"
   }
 
-  target_group_tags = {
+  listeners = {
+    ex-tcp = {
+      port     = 80
+      protocol = "TCP"
+      forward = {
+        target_group_key = "ex-target"
+      }
+    }
+  }
+
+  tags = {
+    Name     = "${var.application_name}-nlb"
     Resource = "${var.application_name}-nlb-tg-http"
   }
 }
